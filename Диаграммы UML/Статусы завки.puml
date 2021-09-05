@@ -1,0 +1,10 @@
+@startuml
+(*) --> "Новая заявка" as state1
+state1 -right->[Отправить \nв обработку] "В обработке" as state2
+state1 -right->[Удалить] (*) 
+state2 -left->[Отклонить] state1
+state2 -right->[Публикация] "Регистр готов" as state3
+state3 -left->[Внести изменения] "Редактирование" as state4
+state4 -->[Отправить \nв обработку] state2
+state3 -->(*)
+@enduml

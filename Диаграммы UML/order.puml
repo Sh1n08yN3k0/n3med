@@ -1,0 +1,30 @@
+@startuml
+class order
+{
+'перчень полей
+{field}**id : serial** [<i>Идентификатор регистра</i>]
+{field}**id_register_group : int4** [<i>Идентификатор группы регистров</i>]
+{field}**creation_date : timestamp** [<i>Дата создания регистра</i>]
+{field}**name : varchar(500)** [<i>Наименование регистра</i>]
+{field}**status : varchar(10)** [<i>Статус</i>]
+{field}**id_user : int4** [<i>Идентификатор автора</i>]
+{field}**user_name : varchar(100)** [<i>Наименование пользоавтеля</i>]
+{field}**criterion_desc : varchar** [<i>Критерии включения</i>]
+{field}**table_name : varchar(100)** [<i>Наименование для таблиц регистра</i>]
+{field}**description : varchar(1000)** [<i>Описание регистра</i>]
+{field}**nsi_127_column : varchar(50)** [<i>Наименование поля в справочнике 1.2.643.2.69.1.1.1.127</i>]
+{field}**network_id : int4** [<i>Идентификатор сети прикрепления для настройки доступности</i>]
+{field}**made_by_constructor : bool** [<i>Источник критериев включения:**true** - конструктор, **false** - sql-запрос.</i>]
+'перечень методов
+{method}**DELETE​/Order​/{id} ()** <i>Удаление заявки<\i>
+{method}**GET​/Order​/{id} ()** <i>Получение информации о заявке<\i>
+{method}**GET​/Order​/getEnableNsiOption ()** <i>Получение настроек EnableNsiOption (доступность редактирования поля НСИ)<\i>
+{method}**GET​/Order​/groups ()** <i>Получение групп заявки (регистра)<\i>
+{method}**GET​/Order​/list​/{pageIndex}​/{pageSize}​/{orderColumn}​/{orderAsc} ()** <i>Получение списка заявок<\i>
+{method}**GET​/Order​/orderStatus​/{orderId} ()** <i>Получение статуса заявки<\i>
+{method}**GET​/Order​/search_list​/{pageIndex}​/{pageSize}​/{orderColumn}​/{orderAsc}​/{searchParam} ()** <i>Получение списка заявок c поиском<\i>
+{method}**POST​/Order ()** <i>Создание новой заявки<\i>
+{method}**PUT​/Order​/{id} ()** <i>Обновление информации о заявке<\i>
+{method}**PUT​/Order​/status​/{id} ()** <i>Обновление статуса заявки<\i>
+}
+@enduml
