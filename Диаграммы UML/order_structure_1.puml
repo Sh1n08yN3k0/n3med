@@ -1,0 +1,17 @@
+@startuml name order_structure 
+'перечень объектов
+abstract order
+abstract order_contingent_card
+abstract order_control_event_card
+abstract order_control_list_card
+abstract order_health_aggregate_card
+abstract order_quality_criterion_card
+'отношения объектов
+order o-- order_contingent_card
+order o-- order_control_event_card
+order o-- order_control_list_card
+order o-- order_health_aggregate_card
+order o-- order_quality_criterion_card
+
+@enduml
+

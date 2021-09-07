@@ -1,0 +1,48 @@
+@startuml
+title **Загрузка нового справочника**
+actor "Пользователь" as User
+participant ":UI\nРаздел Справочники\n/dictionary" as UI_Dictionary
+participant "**NEW**:UI\nНормативно-справочная\nинформация" as UI_DictListNSI
+participant ":WebApi\nИнтеграция с НСИ\n**NsiDictionaryImport**" as API_NsiDictionaryImport
+participant ":REST\nN3.НСИ" as N3_NSI 
+participant "БД\nregistry_platform" as DB_Dictionary
+User -> UI_Dictionary : _/registry_platform_ui/dictionary
+activate UI_Dictionary
+activate User
+User <-- UI_Dictionary : Интерфейс справочника
+deactivate UI_Dictionary
+User -> UI_DictListNSI : Запрос на загрузку справочника НСИ
+activate UI_DictListNSI
+alt ["ОШИБКА: справочник не найден."] 
+    UI_DictListNSI -> API_NsiDictionaryImport : **GET:updateDictionary (dictionaryName)**
+    activate API_NsiDictionaryImport #FFBBBB
+    activate UI_DictListNSI#FFBBBB
+    API_NsiDictionaryImport -> N3_NSI : Запрос получения справочных данных\n**[base]/term/ValueSet/$expand?_format=json**
+    activate N3_NSI#FFBBBB
+    API_NsiDictionaryImport <-- N3_NSI : Ошибка: справочник не найден.
+    deactivate N3_NSI
+     API_NsiDictionaryImport --> UI_DictListNSI : 404: Ошибка: справочник не найден.
+    deactivate API_NsiDictionaryImport
+    UI_DictListNSI -->x User : Ошибка: справочник не найден.
+    deactivate UI_DictListNSI
+   else ["УСПЕХ: справочник найден."]
+    UI_DictListNSI -> API_NsiDictionaryImport : **GET:updateDictionary (dictionaryName)**
+    activate API_NsiDictionaryImport
+    activate UI_DictListNSI
+    API_NsiDictionaryImport -> N3_NSI : Запрос получения справочных данных\n**[base]/term/ValueSet/$expand?_format=json**
+    activate N3_NSI
+    API_NsiDictionaryImport <-- N3_NSI : Содержимое справочника\n**.json / .xml**
+    deactivate N3_NSI
+    API_NsiDictionaryImport -> DB_Dictionary : POST:запрос на создание таблицы (**dictionary.table_name=<OID>**)
+    activate DB_Dictionary
+    DB_Dictionary -> DB_Dictionary : Запись новой таблицы\n**db.dictionary.<OID>** 
+    API_NsiDictionaryImport -> DB_Dictionary : GET:запрос на получение информации о таблице (**table_name**;**date_update**)
+    API_NsiDictionaryImport <-- DB_Dictionary : (**table_name;date_update)
+    deactivate DB_Dictionary
+    API_NsiDictionaryImport --> UI_DictListNSI : DTO:<shema_name>(**table_name**;**date_update**)
+    deactivate API_NsiDictionaryImport
+    UI_DictListNSI -->x User : Справочник успешно добавлен
+    deactivate UI_DictListNSI
+    deactivate User
+end 
+@enduml

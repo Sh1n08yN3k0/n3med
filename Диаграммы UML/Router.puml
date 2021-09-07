@@ -1,0 +1,59 @@
+@startuml
+'Ощие настройки
+autonumber
+skinparam maxMessageSize 350
+'Участники
+participant "Портал врача" as IEMK_UI
+participant "Rotuer" as RP_Router
+participant "БД Регистровой" as RP_DB
+participant "Индекс пациента" as MPI 
+participant "Внешний регистр" as ExtReg
+participant "БД ИЭМК" as IEMK_DB 
+
+'Взаимодействие
+IEMK_UI -> MPI : Запрос коллекции **local_id** текущей карточки \n POST:mpi/fhir/$getpatientlist? {patient_link_id_local_pat}
+activate MPI
+activate IEMK_UI
+MPI -> MPI : Поиск коллекции **local_id**
+activate MPI
+MPI --> IEMK_UI : Коллекция **local_id**
+deactivate MPI
+deactivate MPI
+IEMK_UI -> IEMK_DB : Запрос диагнозов пациента {local_id}
+activate IEMK_DB
+IEMK_DB --> IEMK_UI: diagnosis (коллекция диагнозов пациента)
+deactivate IEMK_DB
+IEMK_UI -> RP_Router : Проверка наличия пациента в регистрах \n POST:register​/info {idPat;diagnosis} (множество)
+activate RP_Router
+
+alt ["Внутренний регистр"]
+    RP_Router -> RP_Router : POST:info {idPat; diagnosis}
+    activate RP_Router
+    RP_Router -> RP_DB : Запрос карточек пациента в регистрах \n POST:PatientRegisterUrls {patientIds;registerIds}
+    deactivate RP_Router
+    activate RP_DB
+    RP_DB --> RP_Router : URL КЗ из Регистровой платформы
+    deactivate RP_DB
+    RP_Router -->x IEMK_UI : URL карточки из внутреннего регистра
+else ["Внешний регистр"]
+    RP_Router -> RP_Router : POST:info {idPat; diagnosis}
+    activate RP_Router
+    RP_Router -> MPI : Запрос наличия карточки внешнего регистра \n POST:/fhir/$getpatient {patient; misID}
+    deactivate RP_Router
+    activate MPI
+    MPI -> MPI  : Проверка наличия карточки от внешнего регистра
+    activate MPI
+    MPI --> RP_Router : **local_id** внешнего регистра
+    deactivate MPI
+    deactivate MPI
+    RP_Router -> ExtReg : Запрос URL карточки пациента внешнего регистра \n GET:patient/getcard {patient:local_id}
+    activate ExtReg
+    ExtReg -> ExtReg : Проверка наличия карточки
+    activate ExtReg
+    ExtReg --> RP_Router : URL карточки внешнего регистра
+    deactivate ExtReg
+    deactivate ExtReg
+    RP_Router -->x IEMK_UI : URL карточки внешнего регистра
+    deactivate RP_Router
+end
+@enduml
